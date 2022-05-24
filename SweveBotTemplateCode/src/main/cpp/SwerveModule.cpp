@@ -35,20 +35,20 @@ SwerveModule::SwerveModule(const int driveMotorChannel,
       -units::radian_t(wpi::numbers::pi), units::radian_t(wpi::numbers::pi));
 }
 
-frc::SwerveModuleState SwerveModule::GetState() const {
-  return {units::meters_per_second_t{m_driveEncoder.GetRate()},
-          frc::Rotation2d(units::radian_t(m_turningEncoder.Get()))};
+frc::SwerveModuleState SwerveModule::GetState()/*const*/ {
+  return {units::meters_per_second_t{m_driveMotor.GetSelectedSensorVelocity()},
+          frc::Rotation2d(units::radian_t(m_driveMotor.GetSelectedSensorPosition()))};
 }
 
 void SwerveModule::SetDesiredState(
     const frc::SwerveModuleState& referenceState) {
   // Optimize the reference state to avoid spinning further than 90 degrees
   const auto state = frc::SwerveModuleState::Optimize(
-      referenceState, units::radian_t(m_turningEncoder.Get()));
+      referenceState, units::radian_t(m_driveMotor.GetSelectedSensorPosition()));
 
   // Calculate the drive output from the drive PID controller.
   const auto driveOutput = m_drivePIDController.Calculate(
-      m_driveEncoder.GetRate(), state.speed.value());
+      m_driveMotor.GetSelectedSensorVelocity(), state.speed.value()); //GetSelectedSensorVelocity might be wrong
 
   const auto driveFeedforward = m_driveFeedforward.Calculate(state.speed);
 
@@ -62,4 +62,12 @@ void SwerveModule::SetDesiredState(
   // Set the motor outputs.
   m_driveMotor.SetVoltage(units::volt_t{driveOutput} + driveFeedforward);
   m_turningMotor.SetVoltage(units::volt_t{turnOutput} + turnFeedforward);
+
+  /*double SwerveModule::nativeUnitsToDistanceMters(double sensorCounts)
+  {
+    double motorRotations = (double)sensorCounts / kCountsPerRev;
+    double wheelRotations = motorRotations / kGearRatio;
+    double positionMeters = wheelRotations * (2 * Math.PI * Units.inchesToMeters(kWheelRadiusInches));
+    return positionMeters;
+  }*/
 }

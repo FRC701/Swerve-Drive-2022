@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <ctre/Phoenix.h>
+#include <AHRS.h>
 #include <frc/Encoder.h>
 #include <frc/controller/PIDController.h>
 #include <frc/controller/ProfiledPIDController.h>
@@ -21,8 +23,9 @@ class SwerveModule {
   SwerveModule(int driveMotorChannel, int turningMotorChannel,
                int driveEncoderChannelA, int driveEncoderChannelB,
                int turningEncoderChannelA, int turningEncoderChannelB);
-  frc::SwerveModuleState GetState() const;
+  frc::SwerveModuleState GetState()/*const*/;
   void SetDesiredState(const frc::SwerveModuleState& state);
+  //double nativeUnitsToDistanceMters(double sensorCounts);
 
  private:
   static constexpr double kWheelRadius = 0.0508;
@@ -33,8 +36,11 @@ class SwerveModule {
   static constexpr auto kModuleMaxAngularAcceleration =
       wpi::numbers::pi * 2_rad_per_s / 1_s;  // radians per second^2
 
-  frc::PWMSparkMax m_driveMotor;
-  frc::PWMSparkMax m_turningMotor;
+  /*frc::PWMSparkMax m_driveMotor;
+  frc::PWMSparkMax m_turningMotor;*/
+
+  WPI_TalonFX m_driveMotor;
+  WPI_TalonFX m_turningMotor;
 
   frc::Encoder m_driveEncoder;
   frc::Encoder m_turningEncoder;
